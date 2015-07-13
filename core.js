@@ -15,6 +15,7 @@ function drawMove(caller) {
 		else {
 			var c=minimax(field,1);
 			//var c=negamax(field,1);
+			//var c=alpha_beta_pruning(field,1,-Infinity,Infinity);
 			document.getElementById("e"+c[1]).innerHTML="O";
 			field[c[1]]=1;
 			if(checkField(field)==10)
@@ -66,6 +67,40 @@ function negamax(field,turn) {
 					info[0]=-c[0];
 				}
 				field[i]=0;
+			}
+		}
+	}
+	return info;
+}
+
+function alpha_beta_pruning(field,turn,alpha,beta) {
+	var info=[-turn*Infinity,-1];
+	var r=checkField(field);
+	if(r!=Infinity)
+		info[0]=r;
+	else {
+		for(var i=0;i<9;i++) {
+			if(field[i]==0) {
+				field[i]=turn;
+				var c=alpha_beta_pruning(field,-turn,alpha,beta);
+				if(turn==1) {
+					if(c[0]>info[0]) {
+						info[1]=i;
+						info[0]=c[0];
+					}
+					if(alpha<c[0])
+						alpha=c[0];
+				} else {
+					if(c[0]<info[0]) {
+						info[1]=i;
+						info[0]=c[0];
+					}
+					if(beta>c[0])
+						beta=c[0];
+				}
+				field[i]=0;
+				if(beta<=alpha)
+					break;
 			}
 		}
 	}
