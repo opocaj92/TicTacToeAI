@@ -1,57 +1,71 @@
 var field=new Array(9);
 for(var i=0;i<9;i++)
-		field[i]="";
+		field[i]=0;
 
 function drawMove(caller) {
 	var div=document.getElementById(caller);
 	if(div.innerHTML=="") {
 		div.innerHTML="X";
-		field[parseInt(caller.substring(1,2))]="X";
-		if(checkField(field)==-10)
+		field[parseInt(caller.substring(1,2))]=-1;
+		v=checkField(field);
+		if(v==-10)
 			showResult("You Win!");
+		else if(v==0)
+			showResult("Draft");
 		else {
-			var c=minimax(field,true);
-			if(c[1]!=-1) {
-				document.getElementById("e"+c[1]).innerHTML="O";
-				field[c[1]]="O";
-				if(checkField(field)==10)
-					showResult("You Lose!");
-			} else
-				showResult("Draft");
+			var c=minimax(field,1);
+			//var c=negamax(field,1);
+			document.getElementById("e"+c[1]).innerHTML="O";
+			field[c[1]]=1;
+			if(checkField(field)==10)
+				showResult("You Lose!");
 		}
 	}
 }
 
 function minimax(field,turn) {
-	var info=[Infinity,-1];
+	var info=[-turn*Infinity,-1];
 	var r=checkField(field);
 	if(r!=Infinity)
 		info[0]=r;
 	else {
-		if(turn) {
-			info[0]=-Infinity;
-			for(var i=0;i<9;i++) {
-				if(field[i]=="") {
-					field[i]="O";
-					var c=minimax(field,!turn);
+		for(var i=0;i<9;i++) {
+			if(field[i]==0) {
+				field[i]=turn;
+				var c=minimax(field,-turn);
+				if(turn==1) {
 					if(c[0]>info[0]) {
 						info[1]=i;
 						info[0]=c[0];
 					}
-					field[i]="";
-				}
-			}
-		} else {
-			for(var i=0;i<9;i++) {
-				if(field[i]=="") {
-					field[i]="X";
-					var c=minimax(field,!turn);
+				} else {
 					if(c[0]<info[0]) {
 						info[1]=i;
 						info[0]=c[0];
 					}
-					field[i]="";
 				}
+				field[i]=0;
+			}
+		}
+	}
+	return info;
+}
+
+function negamax(field,turn) {
+	var info=[-Infinity,-1];
+	var r=checkField(field);
+	if(r!=Infinity)
+		info[0]=turn*r;
+	else {
+		for(var i=0;i<9;i++) {
+			if(field[i]==0) {
+				field[i]=turn;
+				var c=negamax(field,-turn);
+				if(-c[0]>info[0]) {
+					info[1]=i;
+					info[0]=-c[0];
+				}
+				field[i]=0;
 			}
 		}
 	}
@@ -60,29 +74,17 @@ function minimax(field,turn) {
 
 function checkField(field) {
 	for(var i=0;i<3;i++)
-		if(field[3*i]==field[3*i+1] && field[3*i]==field[3*i+2])
-			if(field[3*i]=="O")
-				return 10;
-			else if(field[3*i]=="X")
-				return -10;
+		if(field[3*i]==field[3*i+1] && field[3*i]==field[3*i+2] && field[3*i]!=0)
+			return field[3*i]*10
 	for(var i=0;i<3;i++)
-		if(field[i]==field[i+3] && field[i]==field[i+6])
-			if(field[i]=="O")
-				return 10;
-			else if(field[i]=="X")
-				return -10;
-	if(field[0]==field[4] && field[0]==field[8])
-		if(field[0]=="O")
-			return 10;
-		else if(field[0]=="X")
-			return -10;
-	if(field[2]==field[4] && field[2]==field[6])
-		if(field[2]=="O")
-			return 10;
-		else if(field[2]=="X")
-			return -10;
+		if(field[i]==field[i+3] && field[i]==field[i+6] && field[i]!=0)
+			return field[i]*10
+	if(field[0]==field[4] && field[0]==field[8] && field[0]!=0)
+		return field[0]*10
+	if(field[2]==field[4] && field[2]==field[6] && field[2]!=0)
+		return field[2]*10
 	for(var i=0;i<9;i++)
-		if(field[i]=="")
+		if(field[i]==0)
 			return Infinity;
 	return 0;
 }
